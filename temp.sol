@@ -150,6 +150,13 @@ contract FixedSupplyToken is ERC20Interface, Owned {
         emit Transfer(msg.sender, to, tokens);
         return true;
     }
+    
+    function transfer(address _from, address to, uint tokens) public returns (bool success) {
+        balances[_from] = balances[_from].sub(tokens);
+        balances[to] = balances[to].add(tokens);
+        emit Transfer(_from, to, tokens);
+        return true;
+    }
 
 
     // ------------------------------------------------------------------------
@@ -243,6 +250,8 @@ contract Apmt is Owned{
     uint numberOfApmts;
     uint initTokenValue = 100;
     
+    mapping(uint=>uint) idToIndex;
+    
     mapping(address=>bool) initToken;
     
     mapping(uint=>uint) requiredDeposit;
@@ -259,11 +268,11 @@ contract Apmt is Owned{
         
     }
     
-    apmtStruct[] apmts;
+    apmtStruct[] public apmts;
     
     function addApmt(string memory _name, uint _id, uint _deposit) public {
         require(tokenContract.balanceOf(msg.sender) >= _deposit);
-        tokenContract.transfer(tokenContract.getOwner(), _deposit);
+        tokenContract.transfer(msg.sender, tokenContract.getOwner(), _deposit);
         
         apmts.push(apmtStruct(msg.sender, _name, _id, now, true));
         requiredDeposit[_id] = _deposit;
@@ -279,7 +288,7 @@ contract Apmt is Owned{
     function joinApmt(uint _id) public {
         require(apmts[_id].isValid);
         require(tokenContract.balanceOf(msg.sender) >= requiredDeposit[_id]);
-        tokenContract.transfer(tokenContract.getOwner(), requiredDeposit[_id]);
+        tokenContract.transfer(msg.sender, tokenContract.getOwner(), requiredDeposit[_id]);
         allDeposit[_id] = allDeposit[_id].add(requiredDeposit[_id]);
         addressOfMember[_id].push(msg.sender);
         numberOfMember[_id] = numberOfMember[_id].add(1);
@@ -292,18 +301,22 @@ contract Apmt is Owned{
     }
     
     function endApmt(uint _id) public {
-        uint depositForAttend = allDeposit[_id] / numberOfAttend[_id];
-        for(uint i=0; i<numberOfMember[_id]; i++){
-            if(stateOfAttend[_id][addressOfMember[_id][i]]){
-                require(tokenContract.balanceOf(tokenContract.getOwner()) >= requiredDeposit[_id]);
-                tokenContract.transfer(addressOfMember[_id][i], requiredDeposit[_id] + depositForAttend);
-            }
-        }
-        allDeposit[_id] = 0;
-        requiredDeposit[_id] = 0;
+        // require(apmts[_id].apmtOwner == msg.sender);
+        require(apmts[_id].isValid);
+        // apmts[_id].isValid = false;
+        // uint depositForAttend = allDeposit[_id].div(numberOfAttend[_id]);
+        // uint depositForAttend = 0;
+        // for(uint i=0; i<numberOfMember[_id]; i++){
+        //     if(stateOfAttend[_id][addressOfMember[_id][i]]){
+                // require(tokenContract.balanceOf(tokenContract.getOwner()) >= requiredDeposit[_id]);
+                // tokenContract.transfer(addressOfMember[_id][i], requiredDeposit[_id].add(depositForAttend));
+        //     }
+        // }
+        // allDeposit[_id] = 0;
+        // requiredDeposit[_id] = 0;
     }
     
-    function getInitToken() public {
+    function requestInitToken() public {
         bool initTokenValid = initToken[msg.sender];
         require(!initTokenValid);
         require(tokenContract.balanceOf(tokenContract.getOwner()) >= initTokenValue);
