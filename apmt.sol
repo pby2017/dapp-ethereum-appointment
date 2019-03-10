@@ -237,7 +237,7 @@ contract ApmtSupplyToken is ERC20Interface, Owned {
 contract ApmtContract is Owned{
     using SafeMath for uint;
     
-    struct apmtStruct{
+    struct ApmtStruct{
         address apmtOwner;
         string apmtName;
         uint apmtId;
@@ -253,63 +253,69 @@ contract ApmtContract is Owned{
     
     mapping(uint=>uint) idToIndex;
 
-    mapping(address=>bool) initToken;
+    mapping(address=>bool) receivedInitToken;
 
     mapping(uint=>uint) requiredDeposit;
     mapping(uint=>uint) allDeposit;
 
     mapping(uint=>uint) numberOfMember;
     mapping(uint=>address[]) addressOfMember;
+    mapping(uint=>mapping(address=>bool)) stateOfJoin;
     mapping(uint=>uint) numberOfAttend;
     mapping(uint=>mapping(address=>bool)) stateOfAttend;
     
-    apmtStruct[] public apmts;
-    
-    event InitTokenResponded();
-    event ApmtAdded();
+//    mapping(uint=>ApmtStruct) public apmts;
+  
+    ApmtStruct[] apmts;
+      
+    event InitTokenResponded(address _address);
+    event ApmtAdded(address _address);
+    event JoinedApmt(address _address);
+    event EndedApmt(address _address);
     
     constructor() public {
         
     }
     
-    function addApmt(string memory _name, uint _id, uint _deposit) public {
+    function addApmt(string memory _name, uint _deposit) public {
         // 토큰량 체크
         require(tokenContract.balanceOf(msg.sender) >= _deposit);
         // 토큰 전송
         tokenContract.transfer(msg.sender, tokenContract.getOwner(), _deposit);
-        // id와 index 매핑
-        idToIndex[_id] = apmtsIndex;
-        apmtsIndex = apmtsIndex.add(1);
-        uint index = idToIndex[_id];
         // apmt 추가
-        apmts.push(apmtStruct(msg.sender, _name, _id, now, true));
+        ApmtStruct memory apmt = ApmtStruct(msg.sender, _name, numberOfApmts, now, true);
+        apmts.push(apmt);
         // requiredDeposit 설정
-        requiredDeposit[index] = _deposit;
+        requiredDeposit[numberOfApmts] = _deposit;
         // deposit 전송
-        allDeposit[index] = allDeposit[index].add(requiredDeposit[index]);
+        allDeposit[numberOfApmts] = _deposit;
         // 멤버 수 증가
-        numberOfMember[index] = numberOfMember[index].add(1);
+        numberOfMember[numberOfApmts] = 1;
         // 멤버 address 추가
-        addressOfMember[index].push(msg.sender);
+        addressOfMember[numberOfApmts].push(msg.sender);
+        // join 상태 변경
+        stateOfJoin[numberOfApmts][msg.sender] = true;
         // apmt 수 증가
         numberOfApmts = numberOfApmts.add(1);
         // event 호출
-        emit ApmtAdded();
+        emit ApmtAdded(msg.sender);
     }
     
     function joinApmt(uint _id) public{
-        uint index = idToIndex[_id];
         // 토큰량 체크
-        require(tokenContract.balanceOf(msg.sender) >= requiredDeposit[index]);
+        require(tokenContract.balanceOf(msg.sender) >= requiredDeposit[_id]);
         // 토큰 전송
-        tokenContract.transfer(msg.sender, tokenContract.getOwner(), requiredDeposit[index]);
+        tokenContract.transfer(msg.sender, tokenContract.getOwner(), requiredDeposit[_id]);
         // deposit 전송
-        allDeposit[index] = allDeposit[index].add(requiredDeposit[index]);
+        allDeposit[_id] = allDeposit[_id].add(requiredDeposit[_id]);
         // 멤버 수 증가
-        numberOfMember[index] = numberOfMember[index].add(1);
+        numberOfMember[_id] = numberOfMember[_id].add(1);
         // 멤버 address 추가
-        addressOfMember[index].push(msg.sender);
+        addressOfMember[_id].push(msg.sender);
+        // join 상태 변경
+        stateOfJoin[_id][msg.sender] = true;
         // event 호출
+        emit JoinedApmt(msg.sender);
     }
 
     function attendApmt(uint _id) public {
@@ -323,63 +329,86 @@ contract ApmtContract is Owned{
     }
     
     function endApmt(uint _id) public{
-        uint index = idToIndex[_id];
         // 방장인지 체크
-        require(apmts[index].apmtOwner == msg.sender);
+        require(apmts[_id].apmtOwner == msg.sender);
         // 유효한지 체크
-        require(apmts[index].isValid);
+        require(apmts[_id].isValid);
         // 유효 끝났다고 표시
-        apmts[index].isValid = false;
+        apmts[_id].isValid = false;
         // 환급 금액 계산
-        uint depositForAttend = allDeposit[index].div(numberOfAttend[index]);
+        uint depositForAttend = allDeposit[_id].div(numberOfAttend[_id]);
         // 환급(참석한사람인지 / 환급 금액 있는지 / 환급)
-        uint numOfMember = numberOfMember[index];
+        uint numOfMember = numberOfMember[_id];
         for(uint i=0; i<numOfMember; i++){
-            if(stateOfAttend[index][addressOfMember[index][i]]){
-                require(tokenContract.balanceOf(tokenContract.getOwner()) >= requiredDeposit[index]);
-                tokenContract.transfer(tokenContract.getOwner(), addressOfMember[index][i], depositForAttend);
+            if(stateOfAttend[_id][addressOfMember[_id][i]]){
+                require(tokenContract.balanceOf(tokenContract.getOwner()) >= requiredDeposit[_id]);
+                tokenContract.transfer(tokenContract.getOwner(), addressOfMember[_id][i], depositForAttend);
             }
         }
         // 환급금 초기화
-        allDeposit[index] = 0;
+        allDeposit[_id] = 0;
         // 필요 환급금 초기화
-        requiredDeposit[index] = 0;
+        requiredDeposit[_id] = 0;
+        // event 호출
+        emit EndedApmt(msg.sender);
     }
 
     function requestInitToken() public {
-        // 이미 시작 토큰을 받았는지 체크
-        // bool initTokenValid = initToken[msg.sender];
-        // require(!initTokenValid);
-        require(!initToken[msg.sender]);
-        // 시작 토큰을 줄 수 있는지 체크
-        require(tokenContract.balanceOf(tokenContract.getOwner()) >= initTokenValue);
         // 시작 토큰 전송
         tokenContract.transfer(msg.sender, initTokenValue);
         // 이미 시작 토큰 받았다고 표시
-        initToken[msg.sender] = true;
+        receivedInitToken[msg.sender] = true;
         // event 호출
-        emit InitTokenResponded();
+        emit InitTokenResponded(msg.sender);
+    }
+    
+    function isReceivedInitToken() public view returns (bool) {
+        // 이미 시작 토큰을 받았는지 체크
+        return receivedInitToken[msg.sender];
+    }
+    
+    function isAlreadyJoin(uint _id) public view returns (bool){
+        // 이미 참가 신청 했는지 체크
+        return stateOfJoin[_id][msg.sender];
+    }
+    
+    function isApmtValid(uint _id) public view returns (bool){
+        return apmts[_id].isValid;
+    }
+    
+    function getInitTokenValue() public view returns (uint) {
+        return initTokenValue;
+    }
+    
+    function getTokenContractOwner() public view returns (address) {
+        return tokenContract.getOwner();
     }
 
     function getBalance(address _address) public view returns (uint){
         return tokenContract.balanceOf(_address);
     }
     
+    function getRequiredDeposit(uint _id) public view returns (uint) {
+        return requiredDeposit[_id];
+    }
+    
     function getNumberOfApmts() public view returns(uint){
         return numberOfApmts;
     }
+    
+    function getApmtOwner(uint _id) public view returns (address){
+        return apmts[_id].apmtOwner;
+    }
 
-    function getApmt(uint _id) public view returns(
+    function getApmt(uint _index) public view returns(
         uint, string memory, uint, uint, uint, uint, bool){
-            
-        uint index = idToIndex[_id];
         
-        return (apmts[index].apmtId, 
-        apmts[index].apmtName, 
-        requiredDeposit[index],
-        numberOfAttend[index],
-        numberOfMember[index], 
-        apmts[index].timestamp, 
-        apmts[index].isValid);
+        return (apmts[_index].apmtId, 
+        apmts[_index].apmtName, 
+        requiredDeposit[_index],
+        numberOfAttend[_index],
+        numberOfMember[_index], 
+        apmts[_index].timestamp, 
+        apmts[_index].isValid);
     }
 }

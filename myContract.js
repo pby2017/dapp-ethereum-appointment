@@ -1,5 +1,5 @@
 secret="";
-myContractAddress = "0xdc0dc30156621a23afd71b0c69b4a23ab7e1376b";
+myContractAddress = "0x4e9cf6b915e9151e9018c27afcd87d4b96bac615";
 abi = [
 	{
 		"constant": false,
@@ -16,10 +16,6 @@ abi = [
 			{
 				"name": "_name",
 				"type": "string"
-			},
-			{
-				"name": "_id",
-				"type": "uint256"
 			},
 			{
 				"name": "_deposit",
@@ -105,20 +101,50 @@ abi = [
 	},
 	{
 		"anonymous": false,
-		"inputs": [],
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "_address",
+				"type": "address"
+			}
+		],
 		"name": "InitTokenResponded",
 		"type": "event"
 	},
 	{
 		"anonymous": false,
-		"inputs": [],
-		"name": "NotEnoughToken",
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "_address",
+				"type": "address"
+			}
+		],
+		"name": "ApmtAdded",
 		"type": "event"
 	},
 	{
 		"anonymous": false,
-		"inputs": [],
-		"name": "ApmtAdded",
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "_address",
+				"type": "address"
+			}
+		],
+		"name": "JoinedApmt",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "_address",
+				"type": "address"
+			}
+		],
+		"name": "EndedApmt",
 		"type": "event"
 	},
 	{
@@ -142,84 +168,7 @@ abi = [
 		"constant": true,
 		"inputs": [
 			{
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "addressOfMember",
-		"outputs": [
-			{
-				"name": "",
-				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "allDeposit",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "apmts",
-		"outputs": [
-			{
-				"name": "apmtOwner",
-				"type": "address"
-			},
-			{
-				"name": "apmtName",
-				"type": "string"
-			},
-			{
-				"name": "apmtId",
-				"type": "uint256"
-			},
-			{
-				"name": "timestamp",
-				"type": "uint256"
-			},
-			{
-				"name": "isValid",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "_id",
+				"name": "_index",
 				"type": "uint256"
 			}
 		],
@@ -262,11 +211,44 @@ abi = [
 		"constant": true,
 		"inputs": [
 			{
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "getApmtOwner",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
 				"name": "_address",
 				"type": "address"
 			}
 		],
 		"name": "getBalance",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getInitTokenValue",
 		"outputs": [
 			{
 				"name": "",
@@ -295,11 +277,11 @@ abi = [
 		"constant": true,
 		"inputs": [
 			{
-				"name": "",
+				"name": "_id",
 				"type": "uint256"
 			}
 		],
-		"name": "idToIndex",
+		"name": "getRequiredDeposit",
 		"outputs": [
 			{
 				"name": "",
@@ -312,13 +294,46 @@ abi = [
 	},
 	{
 		"constant": true,
-		"inputs": [
+		"inputs": [],
+		"name": "getTokenContractOwner",
+		"outputs": [
 			{
 				"name": "",
 				"type": "address"
 			}
 		],
-		"name": "initToken",
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "isAlreadyJoin",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "isApmtValid",
 		"outputs": [
 			{
 				"name": "",
@@ -332,11 +347,11 @@ abi = [
 	{
 		"constant": true,
 		"inputs": [],
-		"name": "initTokenValue",
+		"name": "isReceivedInitToken",
 		"outputs": [
 			{
 				"name": "",
-				"type": "uint256"
+				"type": "bool"
 			}
 		],
 		"payable": false,
@@ -360,147 +375,11 @@ abi = [
 	{
 		"constant": true,
 		"inputs": [],
-		"name": "numberOfApmts",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "numberOfAttend",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "numberOfMember",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
 		"name": "owner",
 		"outputs": [
 			{
 				"name": "",
 				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "requiredDeposit",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "stateOfAttend",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "testAddr",
-		"outputs": [
-			{
-				"name": "",
-				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "testInt",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "testInt2",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
 			}
 		],
 		"payable": false,
