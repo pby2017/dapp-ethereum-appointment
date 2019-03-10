@@ -247,85 +247,44 @@ contract ApmtContract is Owned{
 
     ApmtSupplyToken tokenContract = new ApmtSupplyToken();
     
-    uint public numberOfApmts;
-    uint public initTokenValue = 100;
+    uint numberOfApmts;
+    uint initTokenValue = 100;
+    uint apmtsIndex;
     
-    mapping(uint=>uint) public idToIndex;
+    mapping(uint=>uint) idToIndex;
 
-    mapping(address=>bool) public initToken;
+    mapping(address=>bool) initToken;
 
-    mapping(uint=>uint) public requiredDeposit;
-    mapping(uint=>uint) public allDeposit;
+    mapping(uint=>uint) requiredDeposit;
+    mapping(uint=>uint) allDeposit;
 
-    mapping(uint=>uint) public numberOfMember;
-    mapping(uint=>address[]) public addressOfMember;
-    mapping(uint=>uint) public numberOfAttend;
-    mapping(uint=>mapping(address=>bool)) public stateOfAttend;
+    mapping(uint=>uint) numberOfMember;
+    mapping(uint=>address[]) addressOfMember;
+    mapping(uint=>uint) numberOfAttend;
+    mapping(uint=>mapping(address=>bool)) stateOfAttend;
     
     apmtStruct[] public apmts;
     
     event InitTokenResponded();
-    event NotEnoughToken();
     event ApmtAdded();
     
     constructor() public {
         
     }
     
-    uint public testInt;
-    uint public testInt2;
-    address public testAddr;
-  
     function addApmt(string memory _name, uint _id, uint _deposit) public {
         // 토큰량 체크
-        uint myToken = tokenContract.balanceOf(msg.sender);
-        if(myToken < _deposit){
-            testInt = myToken;
-            testInt2 = _deposit;
-            testAddr = msg.sender;
-            emit NotEnoughToken();
-            return;
-        }
+        require(tokenContract.balanceOf(msg.sender) >= _deposit);
         // 토큰 전송
         tokenContract.transfer(msg.sender, tokenContract.getOwner(), _deposit);
         // id와 index 매핑
-        idToIndex[_id] = numberOfApmts;
-        uint index = idToIndex[_id];
-        
-        // requiredDeposit 설정
-        requiredDeposit[index] = requiredDeposit[index].add(_deposit);
-        
-        testInt=_deposit;
-        emit ApmtAdded();
-    }
-   
-/*
-    function addApmt(string memory _name, uint _id, uint _deposit) public {
-        // 토큰량 체크
-        uint myToken = tokenContract.balanceOf(msg.sender);
-        // require(myToken >= _deposit);
-        if(myToken < _deposit){
-            testInt = tokenContract.balanceOf(msg.sender);
-            testInt2 = _deposit;
-            emit NotEnoughToken();
-            return;
-        }
-        // 토큰 전송
-        tokenContract.transfer(msg.sender, tokenContract.getOwner(), _deposit);
-        // id와 index 매핑
-        idToIndex[_id] = numberOfApmts;
+        idToIndex[_id] = apmtsIndex;
+        apmtsIndex = apmtsIndex.add(1);
         uint index = idToIndex[_id];
         // apmt 추가
-        // apmts.push(apmtStruct(msg.sender, _name, _id, now, true));
-        apmts.push(apmtStruct({
-            apmtOwner: msg.sender,
-            apmtName: _name,
-            apmtId: _id,
-            timestamp: now,
-            isValid: true
-        }));
+        apmts.push(apmtStruct(msg.sender, _name, _id, now, true));
         // requiredDeposit 설정
-        requiredDeposit[index] = requiredDeposit[index].add(1);
+        requiredDeposit[index] = _deposit;
         // deposit 전송
         allDeposit[index] = allDeposit[index].add(requiredDeposit[index]);
         // 멤버 수 증가
@@ -335,11 +294,9 @@ contract ApmtContract is Owned{
         // apmt 수 증가
         numberOfApmts = numberOfApmts.add(1);
         // event 호출
-        testInt=5;
-        testInt=_deposit;
         emit ApmtAdded();
     }
-*/
+    
     function joinApmt(uint _id) public{
         uint index = idToIndex[_id];
         // 토큰량 체크

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link rel='stylesheet' href='./style.css' type='text/css' />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="./lib/bignumber.min.js"></script>
+    <script type="text/javascript" src="./lib/web3-light.js"></script>
+    <script type="text/javascript" src="myContract.js"></script>
+    <script type="text/javascript">
+        var Web3 = require('web3');
+        var web3 = new Web3();
+        web3.setProvider(new web3.providers.HttpProvider("http://localhost:8544"));
+
+        var apmtContractAddress = myContractAddress;
+        var apmtContract = web3.eth.contract(abi).at(apmtContractAddress);
+
+        var initEth = 10000;
+        var myGasLimit = 21000;
+
+        function newAccount() {
+            var myPassphraseElement = document.getElementById("passphrase");
+            var myPassphrase = myPassphraseElement.value;
+            if (myPassphraseElement.length == 0) {
+                alert("비밀번호를 입력해주세요.");
+                return;
+            }
+            var newAddress = web3.personal.newAccount(myPassphrase);
+            web3.personal.unlockAccount(web3.eth.coinbase, secret);
+            web3.eth.sendTransaction({ from: web3.eth.coinbase, to: newAddress, value: web3.toWei(initEth, web3.ETH), gas: myGasLimit }, function (err, txHash) {
+                if (!err) {
+                    var filter = web3.eth.filter('latest');
+                    console.log("filter define - ",filter);
+                    filter.watch(function (error, log) {
+                        filter.stopWatching()
+                        console.log("filter stopWatching()");
+                        if (error) {
+                            console.log('error\n' + error);
+                        } else {
+                            console.log('log\n');
+                            alert('계정 생성 완료 (보유 이더 : ' + web3.fromWei(web3.eth.getBalance(newAddress), web3.ETH) + ')');
+                            web3.personal.unlockAccount(newAddress, myPassphrase);
+                            apmtContract.requestInitToken({ from: newAddress });
+                            var initTokenEvent = apmtContract.InitTokenResponded({ from: newAddress, gas: myGasLimit });
+                            console.log("initTokenEvent define - ",initTokenEvent);
+                            initTokenEvent.watch(function (error, log) {
+                                initTokenEvent.stopWatching();
+                                console.log("initTokenEvent stopWatching()");
+                                if (!error) {
+                                    var myInitToken = apmtContract.getBalance(newAddress);
+                                    alert('신규 계정 토큰 획득 성공! (보유 토큰 : ' + myInitToken + ' apmt)');
+                                    console.log('신규 계정 토큰 획득 성공! 토큰 : ' + myInitToken + ' apmt');
+                                    makeAccountsSelect();
+                                    myPassphraseElement.value = "";
+                                } else {
+                                    alert('신규 계정 토큰 획득 실패!');
+                                    console.log(error);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+        }
+
+        function makeAccountsSelect() {
+            var list = web3.eth.accounts;
+            var select = document.getElementById('accounts');
+            while (select.hasChildNodes()) {
+                select.removeChild(select.firstChild);
+            }
+            for (var i = 0; i < list.length; i++) {
+                var opt = document.createElement('option');
+                opt.value = list[i];
+                // var weiBalance = web3.eth.getBalance(list[i]);
+                // var ethBalance = web3.fromWei(weiBalance, web3.ETH);
+                var tokenBalance = apmtContract.getBalance(list[i]);
+                opt.innerHTML = list[i] + ' (' + tokenBalance + ' apmt)';
+                select.appendChild(opt);
+            }
+        }
+
+        function showApmtList() {
+            var table = document.getElementById('apmtTable');
+            while (table.hasChildNodes()) {
+                table.removeChild(table.firstChild);
+            }
+            var row = table.insertRow();
+            var cell0 = row.insertCell(0);
+            var cell1 = row.insertCell(1);
+            var cell2 = row.insertCell(2);
+            var cell3 = row.insertCell(3);
+            var cell4 = row.insertCell(4);
+            var cell5 = row.insertCell(5);
+            cell0.innerHTML = '번호';
+            cell1.innerHTML = '제목';
+            cell2.innerHTML = '보증 금액';
+            cell3.innerHTML = '참가 확인 / 참가 신청';
+            cell4.innerHTML = '생성 날짜';
+            cell5.innerHTML = '참가 가능 여부';
+            var length = Number(apmtContract.getNumberOfApmts());
+            console.log('등록된 약속 개수 : ' + length);
+            for (var i = 0; i < length; i++) {
+                var apmt = apmtContract.getApmt(i);
+                var toString = apmt.toString();
+                var strArray = toString.split(',');
+
+                // Id, Name, Deposit, NumberOfMember, Timestamp, IsValid
+                var timestamp = new Date(strArray[5] * 1000);
+
+                var row = table.insertRow();
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
+                var cell4 = row.insertCell(3);
+                var cell5 = row.insertCell(4);
+                var cell6 = row.insertCell(5);
+                cell1.innerHTML = strArray[0];
+                cell2.innerHTML = strArray[1];
+                cell3.innerHTML = strArray[2];
+                cell4.innerHTML = strArray[3] + ' / ' + strArray[4];
+                cell5.innerHTML = timestamp;
+                cell6.innerHTML = strArray[6];
+            }
+        }
+        function apmtCreate() {
+            var myAddressElement = document.getElementById('accounts');
+            var myAddress = myAddressElement.value;
+            var myPassphraseElement = document.getElementById('passphrase');
+            var myPassphrase = myPassphraseElement.value;
+            if (myAddressElement.length == 0) {
+                alert('비밀번호를 입력해주세요.');
+                return;
+            }
+            web3.personal.unlockAccount(myAddress, myPassphrase);
+            var id = Number(apmtContract.getNumberOfApmts());
+            var nameElement = document.getElementById('apmtName');
+            var name = nameElement.value;
+            var depositElement = document.getElementById('apmtDeposit');
+            var deposit = Number(depositElement.value);
+            var addApmtEvent = apmtContract.ApmtAdded({ from: myAddress, gas: myGasLimit });
+            console.log("addApmtEvent define - ",addApmtEvent);
+            addApmtEvent.watch(function (error, log) {
+                addApmtEvent.stopWatching();
+                console.log("addApmtEvent stopWatching()");
+                if (!error) {
+                    alert('약속 등록 성공!');
+                    console.log("약속 등록 성공!");
+                    showApmtList();
+                } else {
+                    alert("약속 등록 실패!");
+                    console.log(error);
+                }
+            });
+            var notEnoughToken = apmtContract.NotEnoughToken({ from: myAddress, gas: myGasLimit });
+            console.log("notEnoughToken define - ",notEnoughToken);
+            notEnoughToken.watch(function (error, log) {
+                notEnoughToken.stopWatching();
+                console.log("notEnoughToken stopWatching()");
+                if (!error) {
+                    alert('토큰 부족!');
+                    console.log("토큰 부족!");
+                    showApmtList();
+                } else {
+                    alert("토큰 있음!");
+                    console.log(error);
+                }
+            });
+            console.log('check---------------');
+            console.log('name, id, deposit : ',name, id, deposit);
+            console.log('myAddress = ',myAddress);
+            apmtContract.addApmt(name, id, deposit, { from: myAddress });
+        }
+
+        function requestInitToken() {
+            var myAddressElement = document.getElementById('accounts');
+            var myAddress = myAddressElement.value;
+            var myPassphraseElement = document.getElementById('passphrase');
+            var myPassphrase = myPassphraseElement.value;
+            if (myAddressElement.length == 0) {
+                alert('비밀번호를 입력해주세요.');
+                return;
+            }
+            web3.personal.unlockAccount(myAddress, myPassphrase);
+            apmtContract.requestInitToken({ from: myAddress });
+            var initTokenEvent = apmtContract.InitTokenResponded({ from: myAddress, gas: myGasLimit });
+            console.log("initTokenEvent define - ",initTokenEvent);
+            initTokenEvent.watch(function (error, log) {
+                initTokenEvent.stopWatching();
+                console.log("initTokenEvent stopWatching()");
+                if (!error) {
+                    var myInitToken = apmtContract.getBalance(myAddress);
+                    alert('신규 계정 토큰 획득 성공! (보유 토큰 : ' + myInitToken + ' apmt)');
+                    console.log('신규 계정 토큰 획득 성공! 토큰 : ' + myInitToken + ' apmt');
+                    makeAccountsSelect();
+                    myPassphraseElement.value = "";
+                } else {
+                    alert('신규 계정 토큰 획득 실패!');
+                    console.log(error);
+                }
+            });
+        }
+
+    </script>
+</head>
+
+<body>
+    <h1>계정 관리</h1>
+    <button onClick="requestInitToken()">신규 계정 토큰 요청</button>
+    <button onClick="newAccount()">비밀번호 입력 후 계정 생성하기</button>
+    <h4>생성자 <select name="creator" id="accounts"></select> 비밀번호 <input type="password" id="passphrase"></h4>
+    <h1>약속 등록하기</h1>
+    <div>
+        <h4>
+            <input type="text" id="apmtName" placeholder="약속 제목">
+            <input type="text" id="apmtDeposit" placeholder="약속 참가 보증금">
+            <button onClick="apmtCreate()">약속 등록하기</button>
+        </h4>
+    </div>
+    <h1>약속 참가하기</h1>
+    <div>
+        <table style="width:100%" id="apmtTable"></table>
+    </div>
+    <script>
+        makeAccountsSelect();
+        showApmtList();
+    </script>
+</body>
+
+</html>
