@@ -7,8 +7,8 @@
 ### 준비사항
 
 1. HTML, CSS, Javascript knowledge
-2. Geth & Tools 1.7.3
-3. Remix ethereum org
+2. [Geth & Tools 1.7.3](https://geth.ethereum.org/downloads/)
+3. [Remix ethereum org](http://remix.ethereum.org/)
 
 ## 테스트 (방법)
 
