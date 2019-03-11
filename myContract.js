@@ -1,5 +1,5 @@
 secret="";
-myContractAddress = "0x4e9cf6b915e9151e9018c27afcd87d4b96bac615";
+myContractAddress = "0x7bbbae8a2832374c91ace4e44dd414f99446da4e";
 abi = [
 	{
 		"constant": false,
@@ -133,6 +133,18 @@ abi = [
 			}
 		],
 		"name": "JoinedApmt",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "_address",
+				"type": "address"
+			}
+		],
+		"name": "AttendedApmt",
 		"type": "event"
 	},
 	{
@@ -300,6 +312,25 @@ abi = [
 			{
 				"name": "",
 				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "isAlreadyAttend",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool"
 			}
 		],
 		"payable": false,
