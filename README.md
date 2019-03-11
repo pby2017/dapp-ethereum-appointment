@@ -15,9 +15,12 @@
 [참고영상](https://youtu.be/jpPDz_KSGAM)
 
 1. Geth (dev mode & rpcport except 8545) 실행
-2. Remix ethereum에서 Geth Web3 Provider 연결
-3. Remix ethereum에서 contract deploy(배포)
-4. Remix ethereum에서 address와 ABI 각각 복사 후 myContract.js 파일의 address와 ABI 수정
+```
+geth --datadir testNode1 --networkid 9865 --rpcapi "personal,db,eth,net,web3,miner" --rpc --rpcaddr "0.0.0.0" --rpcport 8544 --rpccorsdomain "*" --nodiscover --maxpeers 0 --dev console
+```
+2. [Remix ethereum](http://remix.ethereum.org/)에서 Geth Web3 Provider 연결
+3. [Remix ethereum](http://remix.ethereum.org/)에서 contract deploy(배포)
+4. [Remix ethereum](http://remix.ethereum.org/)에서 address와 ABI 각각 복사 후 myContract.js 파일의 address와 ABI 수정
 5. index.html 파일 실행 후 사용
 
 ## UI
