@@ -22,4 +22,4 @@
 
 ## UI
 
-![UI image](https://github.com/pby2017/study-apmt-geth-dapp/image/UI.jpg)
+![UI image](https://github.com/pby2017/study-apmt-geth-dapp/blob/master/image/UI.jpg)
