@@ -303,6 +303,8 @@ contract ApmtContract is Owned{
     function joinApmt(uint _id) public{
         // 유효한지 체크
         require(apmts[_id].isValid);
+        // 이전 참가 신청 체크
+        require(!stateOfJoin[_id][msg.sender]);
         // 토큰량 체크
         require(tokenContract.balanceOf(msg.sender) >= requiredDeposit[_id]);
         // 토큰 전송

@@ -354,13 +354,6 @@
                 return;
             }
 
-            var apmtNumberElement = document.getElementById('apmtNumber');
-            var apmtNumber = apmtNumberElement.value;
-            if (apmtNumber == '') {
-                alert('약속 번호를 입력해주세요.');
-                return;
-            }
-
             var numberOfApmts = apmtContract.getNumberOfApmts();
             if (numberOfApmts <= 0) {
                 alert('아직 약속이 없습니다.');
@@ -384,7 +377,7 @@
 
             watchAttendedApmt(myAddress, '약속 참석하기 성공!', '약속 참석하기 실패!');
 
-            apmtContract.endApmt(apmtNumber, { from: myAddress, gas: addApmtGasLimit });
+            apmtContract.attendApmt(apmtNumber, { from: myAddress, gas: addApmtGasLimit });
         }
 
         function apmtEnd() {

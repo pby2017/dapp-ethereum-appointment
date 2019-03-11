@@ -1,5 +1,5 @@
 secret="";
-myContractAddress = "0x7bbbae8a2832374c91ace4e44dd414f99446da4e";
+myContractAddress = "0xb745b4a4db8ec709f7469aa0762ddb85659c68c4";
 abi = [
 	{
 		"constant": false,
