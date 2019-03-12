@@ -24,5 +24,7 @@ geth --datadir testNode1 --networkid 9865 --rpcapi "personal,db,eth,net,web3,min
 5. index.html 파일 실행 후 사용
 
 ## UI
-
+```
+※ 사용법은 html 실행시 하단에 정리되어 있음.
+```
 ![UI image](https://github.com/pby2017/study-apmt-geth-dapp/blob/master/image/UI.jpg)
