@@ -30,3 +30,9 @@ geth --datadir testNode1 --networkid 9865 --rpcapi "personal,db,eth,net,web3,min
 ※ 사용법은 html 실행시 하단에 정리되어 있음.
 ```
 ![UI image](https://github.com/pby2017/study-apmt-geth-dapp/blob/master/image/UI.jpg)
+
+## 변경사항
+* 2019/ 03/ 15 15:36
+UI 부트스트랩 적용하여 배치 수정했습니다.
+* 2019/ 03/ 11 19:22
+참석 확인 문제 수정했습니다.
