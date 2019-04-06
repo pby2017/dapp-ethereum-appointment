@@ -7,7 +7,15 @@
 ### 준비사항
 
 1. HTML, CSS, Javascript knowledge
-2. [Geth & Tools 1.7.3](https://geth.ethereum.org/downloads/)
+2. Geth
+   * Windows
+     1. [Geth & Tools 1.7.3](https://geth.ethereum.org/downloads/)
+   * Mac
+     1. [Go language recently version](https://golang.org/dl/)
+     2. git clone https://github.com/ethereum/go-ethereum.git
+        1. move directory to 'go-ethereum' directory
+        2. execute command 'make geth' (= Makefile)
+        3. Run geth tool at 'go-ethereum/build/bin/'
 3. [Remix ethereum org](http://remix.ethereum.org/)
 
 ## 테스트 (방법)
