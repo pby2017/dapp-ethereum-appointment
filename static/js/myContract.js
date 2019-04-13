@@ -1,4 +1,5 @@
 secret="";
+myUrl = "http://localhost:8544";
 myContractAddress = "0xea07006a7a490b299c5d106e37c165ca1c56cad8";
 abi = [
 	{
