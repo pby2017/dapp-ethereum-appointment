@@ -238,186 +238,82 @@ contract ApmtContract is Owned{
     using SafeMath for uint;
     
     struct ApmtStruct{
-        address apmtOwner;
-        string apmtName;
-        uint apmtId;
-        uint timestamp;
-        bool isValid;
+        // 약속 정보
     }
 
-    ApmtSupplyToken tokenContract = new ApmtSupplyToken();
+    // 토큰 발행
     
-    uint numberOfApmts;
-    uint initTokenValue = 100;
-    uint apmtsIndex;
-    
-    mapping(uint=>uint) idToIndex;
-
-    mapping(address=>bool) receivedInitToken;
-
-    mapping(uint=>uint) requiredDeposit;
-    mapping(uint=>uint) allDeposit;
-
-    mapping(uint=>uint) numberOfMember;
-    mapping(uint=>address[]) addressOfMember;
-    mapping(uint=>mapping(address=>bool)) stateOfJoin;
-    mapping(uint=>uint) numberOfAttend;
-    mapping(uint=>mapping(address=>bool)) stateOfAttend;
-  
-    ApmtStruct[] apmts;
+    // 토큰 및 약속 관리에 필요한 변수
       
-    event InitTokenResponded(address _address);
-    event ApmtAdded(address _address);
-    event JoinedApmt(address _address);
-    event AttendedApmt(address _address);
-    event EndedApmt(address _address);
+    // 요청 처리 후 응답할 이벤트
     
     constructor() public {
         
     }
     
     function addApmt(string memory _name, uint _deposit) public {
-        // 토큰량 체크
-        require(tokenContract.balanceOf(msg.sender) >= _deposit);
-        // 토큰 전송
-        tokenContract.transfer(msg.sender, tokenContract.getOwner(), _deposit);
-        // apmt 추가
-        ApmtStruct memory apmt = ApmtStruct(msg.sender, _name, numberOfApmts, now, true);
-        apmts.push(apmt);
-        // requiredDeposit 설정
-        requiredDeposit[numberOfApmts] = _deposit;
-        // deposit 전송
-        allDeposit[numberOfApmts] = _deposit;
-        // 멤버 수 증가
-        numberOfMember[numberOfApmts] = 1;
-        // 멤버 address 추가
-        addressOfMember[numberOfApmts].push(msg.sender);
-        // join 상태 변경
-        stateOfJoin[numberOfApmts][msg.sender] = true;
-        // apmt 수 증가
-        numberOfApmts = numberOfApmts.add(1);
-        // event 호출
-        emit ApmtAdded(msg.sender);
+        // 약속 추가
     }
     
     function joinApmt(uint _id) public{
-        // 유효한지 체크
-        require(apmts[_id].isValid);
-        // 이전 참가 신청 체크
-        require(!stateOfJoin[_id][msg.sender]);
-        // 토큰량 체크
-        require(tokenContract.balanceOf(msg.sender) >= requiredDeposit[_id]);
-        // 토큰 전송
-        tokenContract.transfer(msg.sender, tokenContract.getOwner(), requiredDeposit[_id]);
-        // deposit 전송
-        allDeposit[_id] = allDeposit[_id].add(requiredDeposit[_id]);
-        // 멤버 수 증가
-        numberOfMember[_id] = numberOfMember[_id].add(1);
-        // 멤버 address 추가
-        addressOfMember[_id].push(msg.sender);
-        // join 상태 변경
-        stateOfJoin[_id][msg.sender] = true;
-        // event 호출
-        emit JoinedApmt(msg.sender);
+        // 약속 참여한다고 표시
     }
 
     function attendApmt(uint _id) public {
-        // 유효한지 체크
-        require(apmts[_id].isValid);
-        // 이전 참석 확인 체크
-        require(!stateOfAttend[_id][msg.sender]);
-        // 참석 확인 표시
-        stateOfAttend[_id][msg.sender] = true;
-        // 참석 확인 멤버 수 증가
-        numberOfAttend[_id] = numberOfAttend[_id].add(1);
-        // event 호출
-        emit AttendedApmt(msg.sender);
+        // 약속 참여했다고 표시
     }
     
     function endApmt(uint _id) public{
-        // 방장인지 체크
-        require(apmts[_id].apmtOwner == msg.sender);
-        // 유효한지 체크
-        require(apmts[_id].isValid);
-        // 유효 끝났다고 표시
-        apmts[_id].isValid = false;
-        // 환급 금액 계산
-        if(numberOfAttend[_id] > 0){
-            uint depositForAttend = allDeposit[_id].div(numberOfAttend[_id]);
-            // 환급(참석한사람인지 / 환급 금액 있는지 / 환급)
-            uint numOfMember = numberOfMember[_id];
-            for(uint i=0; i<numOfMember; i++){
-                if(stateOfAttend[_id][addressOfMember[_id][i]]){
-                    require(tokenContract.balanceOf(tokenContract.getOwner()) >= requiredDeposit[_id]);
-                    tokenContract.transfer(tokenContract.getOwner(), addressOfMember[_id][i], depositForAttend);
-                }
-            }
-        }
-        // event 호출
-        emit EndedApmt(msg.sender);
+        // 약속 종료 후 참여 여부에 따라 토큰 분배
     }
 
     function requestInitToken() public {
-        // 시작 토큰 전송
-        tokenContract.transfer(msg.sender, initTokenValue);
-        // 이미 시작 토큰 받았다고 표시
-        receivedInitToken[msg.sender] = true;
-        // event 호출
-        emit InitTokenResponded(msg.sender);
+        // 초기 토큰 전송
     }
     
     function isReceivedInitToken() public view returns (bool) {
         // 이미 시작 토큰을 받았는지 체크
-        return receivedInitToken[msg.sender];
     }
     
     function isAlreadyJoin(uint _id) public view returns (bool){
         // 이미 참가 신청 했는지 체크
-        return stateOfJoin[_id][msg.sender];
     }
     
     function isApmtValid(uint _id) public view returns (bool){
-        return apmts[_id].isValid;
+        // 유효한 약속인지 체크
     }
     
     function isAlreadyAttend(uint _id) public view returns (bool){
         // 이미 참석 확인 했는지 체크
-        return stateOfAttend[_id][msg.sender];
     }
     
     function getInitTokenValue() public view returns (uint) {
-        return initTokenValue;
+        // 초기 토큰 값 반환
     }
     
     function getTokenContractOwner() public view returns (address) {
-        return tokenContract.getOwner();
+        // 컨트랙트 소유자 지갑주소 반환
     }
 
     function getBalance(address _address) public view returns (uint){
-        return tokenContract.balanceOf(_address);
+        // 해당 지갑주소의 토큰 보유량 반환
     }
     
     function getRequiredDeposit(uint _id) public view returns (uint) {
-        return requiredDeposit[_id];
+        // 약속 참가를 위한 보증금 값 반환
     }
     
     function getNumberOfApmts() public view returns(uint){
-        return numberOfApmts;
+        // 생성된 약속 개수 반환
     }
     
     function getApmtOwner(uint _id) public view returns (address){
-        return apmts[_id].apmtOwner;
+        // 약속 보유자 지갑주소 반환
     }
 
     function getApmt(uint _index) public view returns(
         uint, string memory, uint, uint, uint, uint, bool){
         
-        return (apmts[_index].apmtId, 
-        apmts[_index].apmtName, 
-        requiredDeposit[_index],
-        numberOfAttend[_index],
-        numberOfMember[_index], 
-        apmts[_index].timestamp, 
-        apmts[_index].isValid);
+        // 약속 정보 반환
     }
 }
