@@ -40,6 +40,8 @@ geth --datadir testNode1 --networkid 9865 --rpcapi "personal,db,eth,net,web3,min
 ![UI image](https://github.com/pby2017/study-apmt-geth-dapp/blob/master/image/UI.jpg)
 
 ## 변경사항
+* 2019/ 08/ 31 23:35
+master 브랜치와 final 브랜치를 분리했습니다. (개발 전과 개발 후 코드로 나눔)
 * 2019/ 03/ 15 15:36
 UI 부트스트랩 적용하여 배치 수정했습니다.
 * 2019/ 03/ 11 19:22
