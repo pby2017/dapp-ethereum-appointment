@@ -249,7 +249,6 @@ contract ApmtContract is Owned{
     
     uint numberOfApmts;
     uint initTokenValue = 100;
-    uint apmtsIndex;
     
     mapping(uint=>uint) idToIndex;
 
