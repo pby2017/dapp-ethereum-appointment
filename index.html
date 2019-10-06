@@ -134,22 +134,6 @@
                 }
             });
         }
-        function watchNotEnoughToken(address, successMsg, failMsg) {
-            var notEnoughToken = apmtContract.NotEnoughToken({ from: address, gas: watchGasLimit });
-            console.log('notEnoughToken define - ', notEnoughToken);
-            notEnoughToken.watch(function (error, result) {
-                notEnoughToken.stopWatching();
-                console.log('notEnoughToken stopWatching()');
-                if (!error) {
-                    alert(successMsg);
-                    console.log(successMsg);
-                    console.log(result);
-                } else {
-                    alert(failMsg);
-                    console.log(error);
-                }
-            });
-        }
         function watchJoinedApmt(address, successMsg, failMsg) {
             var joinApmtEvent = apmtContract.JoinedApmt({ from: address, gas: watchGasLimit });
             console.log('joinApmtEvent define - ', joinApmtEvent);
@@ -315,25 +299,22 @@
                 return;
             }
 
-            var apmtNumber = apmtId;
-
-            var numberOfApmts = apmtContract.getNumberOfApmts();
-            if (numberOfApmts <= 0) {
+            if (apmtContract.getNumberOfApmts() <= 0) {
                 alert('아직 약속이 없습니다.');
                 return;
             }
 
-            if (!apmtContract.isApmtValid(apmtNumber)) {
+            if (!apmtContract.isApmtValid(apmtId)) {
                 alert('유효하지 않은 약속 번호입니다.');
                 return;
             }
 
-            if (apmtContract.isAlreadyJoin(apmtNumber, { from: myAddress })) {
+            if (apmtContract.isAlreadyJoin(apmtId, { from: myAddress })) {
                 alert('이미 참가 신청을 했습니다.');
                 return;
             }
 
-            var deposit = apmtContract.getRequiredDeposit(apmtNumber);
+            var deposit = apmtContract.getRequiredDeposit(apmtId);
 
             if (!checkEnoughBalance(myAddress, deposit)) {
                 alert('토큰 부족!')
@@ -342,7 +323,7 @@
 
             watchJoinedApmt(myAddress, '참가 신청 성공!', '참가 신청 실패!');
 
-            apmtContract.joinApmt(apmtNumber, { from: myAddress, gas: addApmtGasLimit });
+            apmtContract.joinApmt(apmtId, { from: myAddress, gas: addApmtGasLimit });
         }
 
         function apmtAttend(apmtId) {
@@ -360,32 +341,29 @@
                 return;
             }
 
-            var apmtNumber = apmtId;
-
-            var numberOfApmts = apmtContract.getNumberOfApmts();
-            if (numberOfApmts <= 0) {
+            if (apmtContract.getNumberOfApmts() <= 0) {
                 alert('아직 약속이 없습니다.');
                 return;
             }
 
-            if (!apmtContract.isApmtValid(apmtNumber)) {
+            if (!apmtContract.isApmtValid(apmtId)) {
                 alert('유효하지 않은 약속 번호입니다.');
                 return;
             }
 
-            if (!apmtContract.isAlreadyJoin(apmtNumber, { from: myAddress })) {
+            if (!apmtContract.isAlreadyJoin(apmtId, { from: myAddress })) {
                 alert('참가 신청한 약속이 아닙니다.');
                 return;
             }
             console.log(apmtContract);
-            if (apmtContract.isAlreadyAttend(apmtNumber, { from: myAddress })) {
+            if (apmtContract.isAlreadyAttend(apmtId, { from: myAddress })) {
                 alert('이미 참석 확인을 했습니다.');
                 return;
             }
 
             watchAttendedApmt(myAddress, '약속 참석하기 성공!', '약속 참석하기 실패!');
 
-            apmtContract.attendApmt(apmtNumber, { from: myAddress, gas: addApmtGasLimit });
+            apmtContract.attendApmt(apmtId, { from: myAddress, gas: addApmtGasLimit });
         }
 
         function apmtEnd(apmtId) {
@@ -403,27 +381,24 @@
                 return;
             }
 
-            var apmtNumber = apmtId;
-
-            var numberOfApmts = apmtContract.getNumberOfApmts();
-            if (numberOfApmts <= 0) {
+            if (apmtContract.getNumberOfApmts() <= 0) {
                 alert('아직 약속이 없습니다.');
                 return;
             }
 
-            if (!apmtContract.isApmtValid(apmtNumber)) {
+            if (!apmtContract.isApmtValid(apmtId)) {
                 alert('유효하지 않은 약속 번호입니다.');
                 return;
             }
 
-            if (apmtContract.getApmtOwner(apmtNumber) != myAddress) {
+            if (apmtContract.getApmtOwner(apmtId) != myAddress) {
                 alert('권한이 없습니다.');
                 return;
             }
 
             watchEndedApmt(myAddress, '약속 마감 성공!', '약속 마감 실패!');
 
-            apmtContract.endApmt(apmtNumber, { from: myAddress, gas: addApmtGasLimit });
+            apmtContract.endApmt(apmtId, { from: myAddress, gas: addApmtGasLimit });
         }
     </script>
 </head>
