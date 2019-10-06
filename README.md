@@ -24,7 +24,8 @@
 
 1. Geth (dev mode & rpcport except 8545) 실행
 ```
-geth --datadir testNode1 --networkid 9865 --rpcapi "personal,db,eth,net,web3,miner" --rpc --rpcaddr "0.0.0.0" --rpcport 8544 --rpccorsdomain "*" --nodiscover --maxpeers 0 --dev console
+// if mac, execute ./geth
+geth --datadir testNode1 --networkid 9865 --rpcapi "personal,db,eth,net,web3,miner" --rpc --rpcaddr "0.0.0.0" --rpcport 8544 --rpccorsdomain "*" --nodiscover --maxpeers 0 --allow-insecure-unlock --dev console
 ```
 2. [Remix ethereum](http://remix.ethereum.org/)에서 Geth Web3 Provider 연결
 3. [Remix ethereum](http://remix.ethereum.org/)에 apmt.sol 파일의 소스코드를 복사
